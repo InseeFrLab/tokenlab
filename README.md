@@ -138,7 +138,7 @@ Deux workflows GitHub Actions (`.github/workflows/`) :
   code n'est pas formaté ou si le lint échoue.
 - **`build-image.yml`** — se déclenche à la création d'un tag `v*` (ex. `v0.2.0`).
   Vérifie que le commit tagué descend bien de `main`, puis build et push l'image sur
-  GitHub Container Registry : `ghcr.io/mdkkmg/tokenlab:<tag>` et `:latest`.
+  GitHub Container Registry : `ghcr.io/inseefrlab/tokenlab:<tag>` et `:latest`.
   Aucun secret à configurer (utilise le `GITHUB_TOKEN` fourni automatiquement par Actions).
   Au premier push, le package peut être créé en visibilité privée par défaut : la rendre
   publique se fait dans GitHub → Packages → tokenlab → Package settings, si besoin.

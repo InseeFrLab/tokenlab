@@ -12,7 +12,7 @@ Merci de vouloir contribuer ! Ce document résume comment mettre en place l'envi
 ## Mettre en place l'environnement local
 
 ```bash
-git clone https://github.com/MdkKmg/tokenlab.git
+git clone https://github.com/InseeFrLab/tokenlab.git
 cd tokenlab
 cp .env.example .env   # puis éditer avec les infos de votre Keycloak de test
 uv sync                # installe les dépendances (dont les outils de dev : ruff)

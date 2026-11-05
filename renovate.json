@@ -2,5 +2,13 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "Laisser l'écosystème (wheels des dépendances compilées) rattraper une nouvelle version de Python avant de proposer la montée",
+      "matchDepNames": ["python"],
+      "matchUpdateTypes": ["major", "minor"],
+      "minimumReleaseAge": "60 days"
+    }
   ]
 }

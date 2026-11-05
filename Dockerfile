@@ -1,16 +1,31 @@
-FROM python:3.12-slim AS base
+# Images Docker Hardened Images (DHI) : pull authentifie avec un compte Docker Hub
+# (docker login dhi.io).
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
-    && update-ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# --- Stage de build : variante -dev (shell, apt) pour installer les dependances ---
+FROM dhi.io/python:3.14-debian13-dev AS build
 
 # Binaire uv officiel (image distroless dediee), pas d'installation via pip necessaire.
-COPY --from=ghcr.io/astral-sh/uv:0.12.13 /uv /uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.12.13 /uv /usr/local/bin/
+
+# UV_PYTHON_DOWNLOADS=never : le venv doit utiliser le Python de l'image (meme chemin
+# dans le stage runtime), jamais un Python telecharge par uv.
+ENV UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1 \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_PROJECT_ENVIRONMENT=/app/.venv
+
+WORKDIR /app
+
+# Couche dependances seule, pour beneficier du cache Docker tant que pyproject/uv.lock ne changent pas.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev
+
+# --- Stage runtime : image minimale, sans shell ni gestionnaire de paquets ---
+# Certificats CA inclus, utilisateur non-root (nonroot, uid 65532) par defaut.
+FROM dhi.io/python:3.14-debian13 AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_LINK_MODE=copy \
-    UV_PROJECT_ENVIRONMENT=/app/.venv
+    PYTHONUNBUFFERED=1
 
 # Verification TLS des appels HTTP vers Keycloak, figee au build de l'image (et non au
 # deploiement) : passer a "false" ici uniquement pour une image de dev face a un
@@ -19,16 +34,9 @@ ENV HTTP_VERIFY_TLS=true
 
 WORKDIR /app
 
-# Couche dependances seule, pour beneficier du cache Docker tant que pyproject/uv.lock ne changent pas.
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
-
+# Fichiers en lecture seule pour l'utilisateur d'execution (proprietaire root).
+COPY --from=build /app/.venv /app/.venv
 COPY app ./app
-
-RUN addgroup --system --gid 10001 tokenlab \
-   && adduser --system --uid 10001 --ingroup tokenlab tokenlab \
-   && chown -R tokenlab:tokenlab /app
-USER 10001
 
 EXPOSE 8080
 

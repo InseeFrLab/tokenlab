@@ -6,7 +6,7 @@ Merci de vouloir contribuer ! Ce document résume comment mettre en place l'envi
 
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/) pour la gestion des dépendances
-- Docker (optionnel, pour tester l'image ou builder en local)
+- Docker (optionnel, pour tester l'image ou builder en local) — l'image part des [Docker Hardened Images](https://docs.docker.com/dhi/) : faire `docker login dhi.io` avec un compte Docker Hub avant le premier `docker build`, sinon le pull des images de base échoue en `unauthorized`
 - Un realm Keycloak accessible (local ou distant) pour tester le standard flow de bout en bout
 
 ## Mettre en place l'environnement local
@@ -45,6 +45,7 @@ uv run ruff check .    # lint
 La CI refuse la fusion si l'un des deux échoue. Pour un fix automatique des problèmes sûrs : `uv run ruff check --fix .`.
 
 Conventions générales du projet :
+
 - Pas de commentaire pour expliquer *ce que* fait le code (les noms doivent suffire) — seulement le *pourquoi* quand c'est non évident (contrainte cachée, contournement, comportement surprenant).
 - Pas d'abstraction ou de configuration ajoutée pour un besoin hypothétique : on code ce dont on a besoin maintenant.
 - Toute variable de configuration fonctionnelle passe par `app/config.py` (`Settings`), pas de valeur en dur éparpillée dans le code.
@@ -68,7 +69,7 @@ Si vous ajoutez un comportement difficile à valider manuellement (ex. un cas d'
 
 ## Sécurité
 
-`tokenlab` est un outil de debug : il affiche des tokens complets et désactive volontairement certaines vérifications (`HTTP_VERIFY_TLS=false` figé au build de l'image via le `Dockerfile`, décodage JWT non vérifié). Toute contribution touchant à ces zones doit préserver le fait que ces comportements restent **explicites et opt-in**, jamais un défaut silencieux — et pour `HTTP_VERIFY_TLS`, jamais surchargeable au déploiement.
+`tokenlab` est un outil de debug : il affiche des tokens complets, décode les JWT sans vérifier leur signature, et permet de désactiver la vérification TLS (`HTTP_VERIFY_TLS`, à `true` par défaut et figé au build de l'image via le `Dockerfile` : ne le passer à `false` que pour une image de dev face à un certificat auto-signé). Toute contribution touchant à ces zones doit préserver le fait que ces comportements restent **explicites et opt-in**, jamais un défaut silencieux — et pour `HTTP_VERIFY_TLS`, jamais surchargeable au déploiement.
 
 Pour signaler une vulnérabilité, ouvrir une issue privée ou contacter directement le mainteneur plutôt qu'une issue publique.
 

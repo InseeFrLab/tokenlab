@@ -5,7 +5,7 @@
 FROM dhi.io/python:3.14-debian13-dev AS build
 
 # Binaire uv officiel (image distroless dediee), pas d'installation via pip necessaire.
-COPY --from=ghcr.io/astral-sh/uv:0.12.13 /uv /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.13.8 /uv /usr/local/bin/
 
 # UV_PYTHON_DOWNLOADS=never : le venv doit utiliser le Python de l'image (meme chemin
 # dans le stage runtime), jamais un Python telecharge par uv.
